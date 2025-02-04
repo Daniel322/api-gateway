@@ -12,6 +12,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type SocketMessage struct {
+	message string `json:"message"`
+}
+
 var (
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024, // Размер буфера чтения
@@ -49,6 +53,7 @@ func wsConnect(c echo.Context) error {
 	}
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	stop := setInterval(func() {
+		fmt.Println("interval cb")
 		ws.WriteMessage(websocket.TextMessage, []byte("keepalive"))
 	}, time.Duration(keepalive)*time.Second)
 	if err != nil {
@@ -73,12 +78,15 @@ func wsConnect(c echo.Context) error {
 		}
 
 		// Read
-		_, msg, err := ws.ReadMessage()
+		var msgData SocketMessage
+		err = ws.ReadJSON(&msgData)
+		// _, msg, err := ws.ReadMessage()
 		if err != nil {
+			stop <- true
 			c.Logger().Error(err)
 			break
 		}
-		fmt.Printf("%s\n", msg)
+		fmt.Printf("%s\n", msgData.message)
 	}
 
 	return err
