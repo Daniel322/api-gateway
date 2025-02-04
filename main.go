@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
+	EnvManager "websocket-gateway/pkgs/env-manager"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
@@ -41,14 +44,22 @@ func setInterval(callback func(), interval time.Duration) chan bool {
 
 func wsConnect(c echo.Context) error {
 	fmt.Println("here start to make ws")
+	keepalive, err := strconv.Atoi(os.Getenv("KEEPALIVE_TIME"))
+	if err != nil {
+		return err
+	}
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	stop := setInterval(func() {
 		ws.WriteMessage(websocket.TextMessage, []byte("keepalive"))
-	}, 10*time.Second)
+	}, time.Duration(keepalive)*time.Second)
 	if err != nil {
 		stop <- true
 		return err
 	}
+	ws.CloseHandler(func(code int, text string) {
+		stop <- true
+		fmt.Printf("Connection closed with code %d and text: %s\n", code, text)
+	})
 	defer ws.Close()
 
 	for {
@@ -68,6 +79,7 @@ func wsConnect(c echo.Context) error {
 }
 
 func main() {
+	EnvManager.Bootstrap()
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
