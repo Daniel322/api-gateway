@@ -10,7 +10,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 var (
@@ -46,7 +45,7 @@ func wsConnect(c echo.Context) error {
 	fmt.Println("here start to make ws")
 	keepalive, err := strconv.Atoi(os.Getenv("KEEPALIVE_TIME"))
 	if err != nil {
-		return err
+		c.Logger().Error(err)
 	}
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	stop := setInterval(func() {
@@ -54,11 +53,14 @@ func wsConnect(c echo.Context) error {
 	}, time.Duration(keepalive)*time.Second)
 	if err != nil {
 		stop <- true
-		return err
+		c.Logger().Error(err)
 	}
-	ws.CloseHandler(func(code int, text string) {
+	closeHandler := ws.CloseHandler()
+	ws.SetCloseHandler(func(code int, text string) error {
 		stop <- true
 		fmt.Printf("Connection closed with code %d and text: %s\n", code, text)
+		err = closeHandler(code, text)
+		return err
 	})
 	defer ws.Close()
 
@@ -67,22 +69,26 @@ func wsConnect(c echo.Context) error {
 		err := ws.WriteMessage(websocket.TextMessage, []byte("Hello, Client!"))
 		if err != nil {
 			c.Logger().Error(err)
+			break
 		}
 
 		// Read
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
 			c.Logger().Error(err)
+			break
 		}
 		fmt.Printf("%s\n", msg)
 	}
+
+	return err
 }
 
 func main() {
 	EnvManager.Bootstrap()
 	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	// e.Use(middleware.Logger())
+	// e.Use(middleware.Recover())
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
