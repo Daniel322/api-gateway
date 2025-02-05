@@ -13,7 +13,7 @@ import (
 )
 
 type SocketMessage struct {
-	message string `json:"message"`
+	Message string `json:"message"`
 }
 
 var (
@@ -86,7 +86,7 @@ func wsConnect(c echo.Context) error {
 			c.Logger().Error(err)
 			break
 		}
-		fmt.Printf("%s\n", msgData.message)
+		fmt.Printf("%s\n", msgData.Message)
 	}
 
 	return err
