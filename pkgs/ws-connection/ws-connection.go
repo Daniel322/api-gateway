@@ -2,6 +2,7 @@ package WsConnection
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -45,51 +46,65 @@ func setInterval(callback func(), interval time.Duration) chan bool {
 	return stop // Возвращаем канал для остановки
 }
 
-var connection WsConnection = WsConnection{
-	CreateConnection: func(c echo.Context) error {
-		fmt.Println("here start to make ws")
-		keepalive, err := strconv.Atoi(os.Getenv("KEEPALIVE_TIME"))
-		if err != nil {
-			c.Logger().Error(err)
-		}
-		ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-		stop := setInterval(func() {
-			fmt.Println("interval cb")
-			ws.WriteMessage(websocket.TextMessage, []byte("keepalive"))
-		}, time.Duration(keepalive)*time.Second)
-		if err != nil {
-			stop <- true
-			c.Logger().Error(err)
-		}
-		closeHandler := ws.CloseHandler()
-		ws.SetCloseHandler(func(code int, text string) error {
-			stop <- true
-			fmt.Printf("Connection closed with code %d and text: %s\n", code, text)
-			err = closeHandler(code, text)
-			return err
-		})
-		defer ws.Close()
+func generateNewId() string {
+	rand.Seed(time.Now().UnixNano())
+	// Используем максимальное значение для int64
+	maxInt := int64(^uint64(0) >> 1)        // Это эквивалент Number.MAX_SAFE_INTEGER
+	randomNumber := rand.Int63n(maxInt) + 1 // Генерация числа от 1 до maxInt
+	return fmt.Sprintf("%d", randomNumber)  // Преобразуем число в строку
+}
 
-		for {
-			// Write
-			err := ws.WriteMessage(websocket.TextMessage, []byte("Hello, Client!"))
-			if err != nil {
-				c.Logger().Error(err)
-				break
-			}
-
-			// Read
-			// var msgData SocketMessage
-			// err = ws.ReadJSON(&msgData)
-			_, msg, err := ws.ReadMessage()
-			if err != nil {
-				stop <- true
-				c.Logger().Error(err)
-				break
-			}
-			fmt.Printf("%s\n", msg)
-		}
-
+func wsConnect(c echo.Context) error {
+	fmt.Println("here start to make ws")
+	keepalive, err := strconv.Atoi(os.Getenv("KEEPALIVE_TIME"))
+	if err != nil {
+		c.Logger().Error(err)
+	}
+	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	stop := setInterval(func() {
+		fmt.Println("interval cb")
+		ws.WriteMessage(websocket.TextMessage, []byte("keepalive"))
+	}, time.Duration(keepalive)*time.Second)
+	if err != nil {
+		stop <- true
+		c.Logger().Error(err)
+	}
+	closeHandler := ws.CloseHandler()
+	ws.SetCloseHandler(func(code int, text string) error {
+		stop <- true
+		fmt.Printf("Connection closed with code %d and text: %s\n", code, text)
+		err = closeHandler(code, text)
 		return err
-	},
+	})
+	defer ws.Close()
+
+	for {
+		// Write
+		err := ws.WriteMessage(websocket.TextMessage, []byte("Hello, Client!"))
+		if err != nil {
+			c.Logger().Error(err)
+			break
+		}
+
+		// Read
+		// var msgData SocketMessage
+		// err = ws.ReadJSON(&msgData)
+		_, msg, err := ws.ReadMessage()
+		if err != nil {
+			stop <- true
+			c.Logger().Error(err)
+			break
+		}
+		fmt.Printf("%s\n", msg)
+	}
+
+	return err
+}
+
+func CreateConnection(c echo.Context) WsConnection {
+	return WsConnection{
+		ConnectionId:     generateNewId(),
+		CreateConnection: wsConnect,
+		// Websocket: ,
+	}
 }
