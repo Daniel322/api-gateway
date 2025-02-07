@@ -1,4 +1,4 @@
-package WsConnection
+package wsconnection
 
 import (
 	"fmt"
@@ -101,10 +101,57 @@ func wsConnect(c echo.Context) error {
 	return err
 }
 
-func CreateConnection(c echo.Context) WsConnection {
-	return WsConnection{
-		ConnectionId:     generateNewId(),
-		CreateConnection: wsConnect,
-		// Websocket: ,
+func CreateConnection(c echo.Context) error {
+	var connectionId = generateNewId()
+
+	keepalive, err := strconv.Atoi(os.Getenv("KEEPALIVE_TIME"))
+	if err != nil {
+		c.Logger().Error(err)
 	}
+	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	ws.WriteMessage(websocket.TextMessage, []byte("your connection id"+" "+connectionId))
+	stop := setInterval(func() {
+		fmt.Println("interval cb")
+		ws.WriteMessage(websocket.TextMessage, []byte("keepalive"))
+	}, time.Duration(keepalive)*time.Second)
+	if err != nil {
+		stop <- true
+		c.Logger().Error(err)
+	}
+	closeHandler := ws.CloseHandler()
+	ws.SetCloseHandler(func(code int, text string) error {
+		stop <- true
+		fmt.Printf("Connection closed with code %d and text: %s\n", code, text)
+		err = closeHandler(code, text)
+		return err
+	})
+	defer ws.Close()
+
+	for {
+		// // Write
+		// err := ws.WriteMessage(websocket.TextMessage, []byte(connectionId+" receive msg"))
+		// if err != nil {
+		// 	c.Logger().Error(err)
+		// 	break
+		// }
+
+		// Read
+		// var msgData SocketMessage
+		// err = ws.ReadJSON(&msgData)
+		_, msg, err := ws.ReadMessage()
+		if err != nil {
+			stop <- true
+			c.Logger().Error(err)
+			break
+		}
+		fmt.Printf("%s\n", msg)
+		err = ws.WriteMessage(websocket.TextMessage, []byte("receive"))
+		if err != nil {
+			stop <- true
+			c.Logger().Error(err)
+			break
+		}
+	}
+
+	return err
 }
