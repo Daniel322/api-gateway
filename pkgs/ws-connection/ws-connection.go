@@ -64,8 +64,8 @@ func CreateConnection(c echo.Context) error {
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	ws.WriteMessage(websocket.TextMessage, []byte("your connection id"+" "+connectionId))
 	stop := setInterval(func() {
-		fmt.Println("interval cb")
-		ws.WriteMessage(websocket.TextMessage, []byte("keepalive"))
+		fmt.Println(connectionId + "interval cb")
+		ws.WriteMessage(websocket.TextMessage, []byte(connectionId+" keepalive"))
 	}, time.Duration(keepalive)*time.Second)
 	if err != nil {
 		stop <- true
@@ -81,13 +81,6 @@ func CreateConnection(c echo.Context) error {
 	defer ws.Close()
 
 	for {
-		// // Write
-		// err := ws.WriteMessage(websocket.TextMessage, []byte(connectionId+" receive msg"))
-		// if err != nil {
-		// 	c.Logger().Error(err)
-		// 	break
-		// }
-
 		// Read
 		// var msgData SocketMessage
 		// err = ws.ReadJSON(&msgData)
@@ -98,7 +91,7 @@ func CreateConnection(c echo.Context) error {
 			break
 		}
 		fmt.Printf("%s\n", msg)
-		err = ws.WriteMessage(websocket.TextMessage, []byte("receive"))
+		err = ws.WriteMessage(websocket.TextMessage, []byte(connectionId+" receive "+string(msg)))
 		if err != nil {
 			stop <- true
 			c.Logger().Error(err)
