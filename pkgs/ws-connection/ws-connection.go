@@ -2,10 +2,10 @@ package wsconnection
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"strconv"
 	"time"
+	"websocket-gateway/pkgs/utils"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
@@ -26,36 +26,8 @@ var (
 	}
 )
 
-// setInterval имитирует поведение setInterval из JavaScript
-func setInterval(callback func(), interval time.Duration) chan bool {
-	ticker := time.NewTicker(interval) // Создаём тикер с заданным интервалом
-	stop := make(chan bool)            // Канал для остановки интервала
-
-	go func() {
-		for {
-			select {
-			case <-ticker.C: // Срабатывает каждые `interval` времени
-				callback() // Выполняем переданную функцию
-			case <-stop: // Если получен сигнал остановки
-				ticker.Stop() // Останавливаем тикер
-				return        // Выходим из горутины
-			}
-		}
-	}()
-
-	return stop // Возвращаем канал для остановки
-}
-
-func generateNewId() string {
-	rand.Seed(time.Now().UnixNano())
-	// Используем максимальное значение для int64
-	maxInt := int64(^uint64(0) >> 1)        // Это эквивалент Number.MAX_SAFE_INTEGER
-	randomNumber := rand.Int63n(maxInt) + 1 // Генерация числа от 1 до maxInt
-	return fmt.Sprintf("%d", randomNumber)  // Преобразуем число в строку
-}
-
 func CreateConnection(c echo.Context) error {
-	var connectionId = generateNewId()
+	var connectionId = utils.GenerateNewId()
 
 	keepalive, err := strconv.Atoi(os.Getenv("KEEPALIVE_TIME"))
 	if err != nil {
@@ -63,8 +35,8 @@ func CreateConnection(c echo.Context) error {
 	}
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	ws.WriteMessage(websocket.TextMessage, []byte("your connection id"+" "+connectionId))
-	stop := setInterval(func() {
-		fmt.Println(connectionId + "interval cb")
+	stop := utils.SetInterval(func() {
+		fmt.Println(connectionId + " interval cb")
 		ws.WriteMessage(websocket.TextMessage, []byte(connectionId+" keepalive"))
 	}, time.Duration(keepalive)*time.Second)
 	if err != nil {
