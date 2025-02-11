@@ -2,6 +2,7 @@ package webserver
 
 import (
 	"net/http"
+	"os"
 	wsconnection "websocket-gateway/pkgs/ws-connection"
 
 	"github.com/labstack/echo/v4"
@@ -16,5 +17,5 @@ func Bootstrap() {
 		return c.String(http.StatusOK, "Welcome to WS Gateway!")
 	})
 	e.GET("/ws", wsconnection.CreateConnection)
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 }
