@@ -17,6 +17,9 @@ type WsConnection struct {
 	Websocket        *websocket.Conn            `json:"websocket"`
 }
 
+type WsMessage struct {
+}
+
 var (
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024, // Размер буфера чтения
