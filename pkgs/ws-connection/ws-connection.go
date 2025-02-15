@@ -1,6 +1,7 @@
 package wsconnection
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -40,7 +41,7 @@ func CreateConnection(c echo.Context) error {
 	closeHandler := ws.CloseHandler()
 	ws.SetCloseHandler(func(code int, text string) error {
 		stop <- true
-		fmt.Printf("Connection closed with code %d and text: %s\n", code, text)
+		fmt.Printf("Connection "+connectionId+" closed with code %d and text: %s\n", code, text)
 		err = closeHandler(code, text)
 		return err
 	})
@@ -48,16 +49,16 @@ func CreateConnection(c echo.Context) error {
 
 	for {
 		// Read
-		// var msgData SocketMessage
-		// err = ws.ReadJSON(&msgData)
+		var msgData WsMessage[CallMessage]
 		_, msg, err := ws.ReadMessage()
+		json.Unmarshal(msg, &msgData)
 		if err != nil {
 			stop <- true
 			c.Logger().Error(err)
 			break
 		}
-		fmt.Printf("%s\n", msg)
-		err = ws.WriteMessage(websocket.TextMessage, []byte(connectionId+" receive "+string(msg)))
+		fmt.Printf("%s\n", msgData.Message)
+		err = ws.WriteMessage(websocket.TextMessage, []byte(connectionId+" receive "+string(msgData.Message.CallId)))
 		if err != nil {
 			stop <- true
 			c.Logger().Error(err)
