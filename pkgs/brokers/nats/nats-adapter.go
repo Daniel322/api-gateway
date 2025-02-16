@@ -18,7 +18,7 @@ func Connect(url string, options nats.Options) error {
 	return err
 }
 
-func Disconnect() error {
+func Disconnect() {
 	natsConnection.Close()
 	fmt.Println("succesfull disconect from NATS")
 }
