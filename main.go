@@ -11,6 +11,10 @@ import (
 
 func main() {
 	EnvManager.Bootstrap()
-	natsadapter.Connect(os.Getenv("NATS_URL"), nats.Options{User: os.Getenv("NATS_USERNAME"), Password: os.Getenv("NATS_PASSWORD")})
+	natsadapter.Connect(
+		os.Getenv("NATS_URL"),
+		nats.Options{
+			User:     os.Getenv("NATS_SYSTEM_USERNAME"),
+			Password: os.Getenv("NATS_SYSTEM_PASSWORD")})
 	webserver.Bootstrap()
 }
