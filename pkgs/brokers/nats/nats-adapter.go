@@ -8,7 +8,6 @@ import (
 )
 
 var natsConnection *nats.Conn
-var err error
 
 func Connect(url string, options nats.Options) error {
 	nc, err := nats.Connect(url)
