@@ -19,7 +19,8 @@ func Connect(url string, options nats.Options) error {
 	natsConnection = nc
 
 	natsConnection.Subscribe("$SRV.REGISTER", func(m *nats.Msg) {
-		// var stringData string = string(m.Data)
+		var stringData string = string(m.Data)
+		fmt.Println(stringData)
 		var jsonData map[string]map[string]any
 		json.Unmarshal(m.Data, &jsonData)
 		for key, value := range jsonData {
