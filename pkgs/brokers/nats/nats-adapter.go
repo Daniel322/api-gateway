@@ -3,7 +3,6 @@ package natsadapter
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 
 	nats "github.com/nats-io/nats.go"
 )
@@ -20,19 +19,19 @@ func Connect(url string, options nats.Options) error {
 
 	natsConnection.Subscribe("$SRV.REGISTER", func(m *nats.Msg) {
 		var stringData string = string(m.Data)
-		fmt.Println(stringData)
+		fmt.Println(stringData, "\n")
 		var jsonData map[string]map[string]any
 		json.Unmarshal(m.Data, &jsonData)
-		for key, value := range jsonData {
-			if reflect.TypeOf(value).Kind().String() == "map" {
-				for infoKey, infoValue := range value {
-					fmt.Println("key:", infoKey, "value:", infoValue)
-				}
-			} else {
-				fmt.Println("key:", key, "value:", value)
-			}
-		}
-		fmt.Println(jsonData)
+		fmt.Println(jsonData["info"]["endpoints"])
+		// for key, value := range jsonData {
+		// 	if reflect.TypeOf(value).Kind().String() == "map" {
+		// 		for infoKey, infoValue := range value {
+		// 			fmt.Println("key:", infoKey, "value:", infoValue)
+		// 		}
+		// 	} else {
+		// 		fmt.Println("key:", key, "value:", value)
+		// 	}
+		// }
 	})
 
 	return err
