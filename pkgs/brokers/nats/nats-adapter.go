@@ -12,12 +12,15 @@ var natsConnection *nats.Conn
 var methods map[string]any
 
 func Connect(url string, options nats.Options) error {
-	nc, err := nats.Connect(url, nats.Name(options.User))
+	nc, err := nats.Connect(url, nats.UserInfo(options.User, options.Password), nats.PermissionErrOnSubscribe(true))
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println("succesfull connect to NATS!")
 
 	natsConnection = nc
 
-	nc.Subscribe("$SYS.> ", func(m *nats.Msg) {
+	_, err = nc.Subscribe("$SYS.>", func(m *nats.Msg) {
 		fmt.Println(m.Subject)
 		var stringData string = string(m.Data)
 		fmt.Println(stringData)
@@ -26,14 +29,11 @@ func Connect(url string, options nats.Options) error {
 		fmt.Println(jsonData)
 	})
 
-	// natsConnection.Subscribe("$SYS.SERVER.*.STATSZ ", func(m *nats.Msg) {
-	// 	fmt.Println("STATS")
-	// 	var stringData string = string(m.Data)
-	// 	fmt.Println(stringData)
-	// 	var jsonData map[string]map[string]any
-	// 	json.Unmarshal(m.Data, &jsonData)
-	// 	fmt.Println(jsonData)
-	// })
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// defer sub.Unsubscribe()
 
 	// natsConnection.Subscribe("$SYS.REQ.SERVER.PING", func(m *nats.Msg) {
 	// 	fmt.Println("PING")
