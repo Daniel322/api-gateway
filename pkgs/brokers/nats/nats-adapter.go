@@ -3,6 +3,7 @@ package natsadapter
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	nats "github.com/nats-io/nats.go"
 )
@@ -45,6 +46,10 @@ func Connect(url string, options nats.Options) error {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	msg, err := natsConnection.Request("$SRV.INFO", []byte(""), 10*time.Millisecond)
+
+	fmt.Println(string(msg.Data))
 
 	return err
 }
