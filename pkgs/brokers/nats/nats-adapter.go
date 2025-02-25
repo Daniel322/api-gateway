@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+	"websocket-gateway/pkgs/utils"
 
 	nats "github.com/nats-io/nats.go"
 )
@@ -47,9 +48,19 @@ func Connect(url string, options nats.Options) error {
 		fmt.Println(err)
 	}
 
-	msg, err := natsConnection.Request("$SRV.INFO", []byte(""), 10*time.Millisecond)
+	utils.SetInterval(func() {
+		msg, err := natsConnection.Request("$SRV.INFO", []byte(""), 10*time.Millisecond)
+		fmt.Println("SRV INFO INTERVAL", string(msg.Data), "\n")
+		if err != nil {
+			fmt.Println(err)
+		}
 
-	fmt.Println(string(msg.Data))
+		msg, err = natsConnection.Request("$SRV.PING", []byte(""), 10*time.Millisecond)
+		fmt.Println("SRV PING INTERVAL", string(msg.Data), "\n")
+		if err != nil {
+			fmt.Println(err)
+		}
+	}, 10*time.Second)
 
 	return err
 }
