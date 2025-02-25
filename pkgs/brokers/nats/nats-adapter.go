@@ -20,56 +20,31 @@ func Connect(url string, options nats.Options) error {
 
 	natsConnection = nc
 
-	_, err = nc.Subscribe("$SYS.>", func(m *nats.Msg) {
+	_, err = natsConnection.Subscribe("$SYS.>", func(m *nats.Msg) {
 		fmt.Println(m.Subject)
 		var stringData string = string(m.Data)
-		fmt.Println(stringData)
+		fmt.Println(m.Subject, "stringData", stringData)
 		var jsonData map[string]map[string]any
 		json.Unmarshal(m.Data, &jsonData)
-		fmt.Println(jsonData)
+		fmt.Println(m.Subject, "jsonData", jsonData)
 	})
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// defer sub.Unsubscribe()
+	_, err = natsConnection.Subscribe("$SRV.>", func(m *nats.Msg) {
+		fmt.Println(m.Subject)
+		var stringData string = string(m.Data)
+		fmt.Println(m.Subject, stringData)
+		var jsonData map[string]map[string]any
+		json.Unmarshal(m.Data, &jsonData)
+		fmt.Println(m.Subject, "jsonData", jsonData)
+	})
 
-	// natsConnection.Subscribe("$SYS.REQ.SERVER.PING", func(m *nats.Msg) {
-	// 	fmt.Println("PING")
-	// 	var stringData string = string(m.Data)
-	// 	fmt.Println(stringData)
-	// 	var jsonData map[string]map[string]any
-	// 	json.Unmarshal(m.Data, &jsonData)
-	// 	fmt.Println(jsonData)
-	// })
-
-	// natsConnection.Subscribe("$SYS.SERVER.*.CLIENT.CONNECT", func(m *nats.Msg) {
-	// 	fmt.Println("connect \n")
-	// 	var stringData string = string(m.Data)
-	// 	fmt.Println(stringData, "\n")
-	// 	var jsonData map[string]map[string]any
-	// 	json.Unmarshal(m.Data, &jsonData)
-	// 	fmt.Println(jsonData)
-	// 	// for key, value := range jsonData {
-	// 	// 	if reflect.TypeOf(value).Kind().String() == "map" {
-	// 	// 		for infoKey, infoValue := range value {
-	// 	// 			fmt.Println("key:", infoKey, "value:", infoValue)
-	// 	// 		}
-	// 	// 	} else {
-	// 	// 		fmt.Println("key:", key, "value:", value)
-	// 	// 	}
-	// 	// }
-	// })
-
-	// natsConnection.Subscribe("$SYS.SERVER.*.CLIENT.DISCONNECT", func(message *nats.Msg) {
-	// 	fmt.Println("disconnect \n")
-	// 	var stringData string = string(message.Data)
-	// 	fmt.Println(stringData, "\n")
-	// 	var jsonData map[string]map[string]any
-	// 	json.Unmarshal(message.Data, &jsonData)
-	// 	fmt.Println(jsonData)
-	// })
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	return err
 }
