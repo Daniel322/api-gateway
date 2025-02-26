@@ -22,18 +22,18 @@ func Connect(url string, options nats.Options) error {
 
 	natsConnection = nc
 
-	_, err = natsConnection.Subscribe("$SYS.>", func(m *nats.Msg) {
-		fmt.Println(m.Subject)
-		var stringData string = string(m.Data)
-		fmt.Println(m.Subject, "stringData", stringData)
-		var jsonData map[string]map[string]any
-		json.Unmarshal(m.Data, &jsonData)
-		fmt.Println(m.Subject, "jsonData", jsonData)
-	})
+	// _, err = natsConnection.Subscribe("$SYS.>", func(m *nats.Msg) {
+	// 	fmt.Println(m.Subject)
+	// 	var stringData string = string(m.Data)
+	// 	fmt.Println(m.Subject, "stringData", stringData)
+	// 	var jsonData map[string]map[string]any
+	// 	json.Unmarshal(m.Data, &jsonData)
+	// 	fmt.Println(m.Subject, "jsonData", jsonData)
+	// })
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
 	_, err = natsConnection.Subscribe("$SRV.>", func(m *nats.Msg) {
 		fmt.Println(m.Subject)
