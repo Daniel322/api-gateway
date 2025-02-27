@@ -1,10 +1,8 @@
 package natsadapter
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
-	"websocket-gateway/pkgs/utils"
 
 	nats "github.com/nats-io/nats.go"
 )
@@ -22,45 +20,44 @@ func Connect(url string, options nats.Options) error {
 
 	natsConnection = nc
 
-	// _, err = natsConnection.Subscribe("$SYS.>", func(m *nats.Msg) {
-	// 	fmt.Println(m.Subject)
-	// 	var stringData string = string(m.Data)
-	// 	fmt.Println(m.Subject, "stringData", stringData)
-	// 	var jsonData map[string]map[string]any
-	// 	json.Unmarshal(m.Data, &jsonData)
-	// 	fmt.Println(m.Subject, "jsonData", jsonData)
-	// })
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
 	_, err = natsConnection.Subscribe("$SRV.>", func(m *nats.Msg) {
 		fmt.Println(m.Subject)
 		var stringData string = string(m.Data)
 		fmt.Println(m.Subject, stringData)
-		var jsonData map[string]map[string]any
-		json.Unmarshal(m.Data, &jsonData)
-		fmt.Println(m.Subject, "jsonData", jsonData)
+		// var jsonData map[string]map[string]any
+		// json.Unmarshal(m.Data, &jsonData)
+		// fmt.Println(m.Subject, "jsonData", jsonData)
 	})
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("subscribe on srv info error", err)
 	}
 
-	utils.SetInterval(func() {
-		msg, err := natsConnection.Request("$SRV.INFO", []byte(""), 10*time.Millisecond)
-		fmt.Println("SRV INFO INTERVAL", string(msg.Data), "\n")
-		if err != nil {
-			fmt.Println(err)
-		}
+	srvInfoInbox := natsConnection.NewInbox()
 
-		msg, err = natsConnection.Request("$SRV.PING", []byte(""), 10*time.Millisecond)
-		fmt.Println("SRV PING INTERVAL", string(msg.Data), "\n")
+	srvInfoSubsribe, err := natsConnection.SubscribeSync(srvInfoInbox)
+	if err != nil {
+		fmt.Println("create sync sub error", err)
+		return err
+	}
+	defer srvInfoSubsribe.Unsubscribe() // Гарантированная отписка
+
+	err = natsConnection.PublishRequest("$SRV.INFO", srvInfoInbox, []byte(""))
+	if err != nil {
+		fmt.Println("publish request error", err)
+		return err
+	}
+
+	for {
+		msg, err := srvInfoSubsribe.NextMsg(10 * time.Millisecond)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("read srv info messages error", err)
+			break
 		}
-	}, 10*time.Second)
+		fmt.Println(string(msg.Data))
+	}
+
+	// TODO: make such inbox with SRV.PING
 
 	return err
 }
