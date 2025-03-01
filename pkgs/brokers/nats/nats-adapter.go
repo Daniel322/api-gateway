@@ -9,9 +9,14 @@ import (
 	nats "github.com/nats-io/nats.go"
 )
 
+type Endpoint struct {
+	Name    string `json:"name"`
+	Subject string `json:"subject"`
+}
 type Method struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id        string     `json:"id"`
+	Name      string     `json:"name"`
+	Endpoints []Endpoint `json:"endpoints"`
 }
 
 var natsConnection *nats.Conn
