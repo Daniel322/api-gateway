@@ -38,7 +38,14 @@ func Connect(url string, options nats.Options) error {
 		fmt.Println(m.Subject, stringData)
 		var jsonData map[string]map[string]any
 		json.Unmarshal(m.Data, &jsonData)
-		methods = append(methods, Method{Id: jsonData["info"]["id"].(string), Name: jsonData["info"]["name"].(string)})
+		methods = append(
+			methods,
+			Method{
+				Id:        jsonData["info"]["id"].(string),
+				Name:      jsonData["info"]["name"].(string),
+				Endpoints: jsonData["info"]["enspoints"].([]Endpoint),
+			},
+		)
 		fmt.Println(methods)
 	})
 
