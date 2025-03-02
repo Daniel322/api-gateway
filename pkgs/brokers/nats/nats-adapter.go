@@ -10,13 +10,14 @@ import (
 )
 
 type Endpoint struct {
-	Name    string `json:"name"`
-	Subject string `json:"subject"`
+	Name     string `json:"name"`
+	Subject  string `json:"subject"`
+	Metadata any    `json:"metadata"`
 }
 type Method struct {
-	Id        string     `json:"id"`
-	Name      string     `json:"name"`
-	Endpoints []Endpoint `json:"endpoints"`
+	Id        string        `json:"id"`
+	Name      string        `json:"name"`
+	Endpoints []interface{} `json:"endpoints"`
 }
 
 var natsConnection *nats.Conn
@@ -43,10 +44,10 @@ func Connect(url string, options nats.Options) error {
 			Method{
 				Id:        jsonData["info"]["id"].(string),
 				Name:      jsonData["info"]["name"].(string),
-				Endpoints: jsonData["info"]["enspoints"].([]Endpoint),
+				Endpoints: jsonData["info"]["endpoints"].([]interface{}),
 			},
 		)
-		fmt.Println(methods)
+		fmt.Println("\n", methods)
 	})
 
 	if err != nil {
@@ -75,7 +76,7 @@ func Connect(url string, options nats.Options) error {
 			}
 			fmt.Println(string(msg.Data))
 		}
-	}, 60*time.Second)
+	}, 10*time.Second)
 
 	return err
 }
