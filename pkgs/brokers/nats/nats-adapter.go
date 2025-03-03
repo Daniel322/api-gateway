@@ -65,7 +65,8 @@ func Connect(url string, options nats.Options) error {
 		json.Unmarshal(m.Data, &jsonData)
 		for _, v := range jsonData.Info.Endpoints {
 			fmt.Println(v)
-			if v.Metadata.Value {
+			if len(v.Metadata.Value) <= 0 && len(v.Metadata.ValueRegex) <= 0 {
+				break
 			}
 		}
 		fmt.Println("\n", jsonData)
