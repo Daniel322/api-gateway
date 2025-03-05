@@ -64,7 +64,7 @@ func Connect(url string, options nats.Options) error {
 		var jsonData SrvRegisterMessage
 		json.Unmarshal(m.Data, &jsonData)
 		for _, v := range jsonData.Info.Endpoints {
-			fmt.Println("v", v)
+			fmt.Println(v)
 			if len(v.Metadata.Value) <= 0 && len(v.Metadata.ValueRegex) <= 0 {
 				break
 			}
