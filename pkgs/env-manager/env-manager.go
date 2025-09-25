@@ -1,4 +1,4 @@
-package EnvManager
+package envmanager
 
 import (
 	"fmt"
@@ -6,10 +6,21 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var err error
+type EnvManager struct {
+	Name string
+	// TODO: make possibility to keep vars here, read file and set vars in custom map
+	Values map[string]string
+}
 
-func Bootstrap() {
-	err = godotenv.Load()
+func NewEnvManager() *EnvManager {
+	return &EnvManager{
+		Name:   "env_manager",
+		Values: make(map[string]string),
+	}
+}
+
+func (manager *EnvManager) Bootstrap() {
+	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}

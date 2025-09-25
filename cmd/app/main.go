@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	EnvManager.Bootstrap()
+	envManager := EnvManager.NewEnvManager()
+	envManager.Bootstrap()
 	natsadapter.Connect(
 		os.Getenv("NATS_URL"),
 		nats.Options{
