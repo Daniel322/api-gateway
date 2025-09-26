@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	config_manager "websocket-gateway/pkg/config"
 )
 
 func main() {
 	configManager := config_manager.NewConfigManager()
-	configManager.Bootstrap()
+	configManager.Bootstrap("config/config.json")
+
+	fmt.Printf("%+v\n", configManager.Values)
 	// natsadapter.Connect(
 	// 	os.Getenv("NATS_URL"),
 	// 	nats.Options{
