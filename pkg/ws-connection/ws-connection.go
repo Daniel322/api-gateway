@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 	"time"
-	"websocket-gateway/pkgs/utils"
+	"websocket-gateway/pkg/utils"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"

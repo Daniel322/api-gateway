@@ -3,7 +3,7 @@ package webserver
 import (
 	"net/http"
 	"os"
-	wsconnection "websocket-gateway/pkgs/ws-connection"
+	wsconnection "websocket-gateway/pkg/ws-connection"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
