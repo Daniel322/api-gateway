@@ -6,6 +6,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type ConfigWebServer struct {
+	Port int
+}
+
 type EnvManager struct {
 	Name string
 	// TODO: make possibility to keep vars here, read file and set vars in custom map
