@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type ConfigWebServer struct {
@@ -22,6 +23,8 @@ type ConfigManager struct {
 	Values Config
 }
 
+const CONFIG_FOLDER = "./config"
+
 func NewConfigManager() *ConfigManager {
 	return &ConfigManager{
 		Name:   "ConfigManager",
@@ -30,10 +33,46 @@ func NewConfigManager() *ConfigManager {
 	}
 }
 
-func (manager *ConfigManager) Bootstrap(path string) {
+type CheckFileFormatResult struct {
+	Filename string
+	Format   string
+}
+
+func (manager *ConfigManager) CheckFileFormat() (*CheckFileFormatResult, error) {
+	absPath, err := filepath.Abs(CONFIG_FOLDER)
+
+	if err != nil {
+		manager.Logger.Println("error on get absolute path", err)
+		return nil, err
+	}
+
+	files, err := os.ReadDir(absPath)
+
+	if err != nil {
+		manager.Logger.Println("error on read abs dir", err)
+		return nil, err
+	}
+
+	configFile := files[0].Name()
+
+	manager.Logger.Println("configFile", configFile)
+
+	return &CheckFileFormatResult{
+		Filename: CONFIG_FOLDER + "/" + configFile,
+		Format:   strings.Split(configFile, ".")[1],
+	}, nil
+}
+
+func (manager *ConfigManager) Bootstrap() {
 	manager.Logger.Println("start config bootstrap")
 
-	absPath, err := filepath.Abs(path)
+	checkFormatResult, err := manager.CheckFileFormat()
+
+	if err != nil {
+		manager.Logger.Println("error on get fileformat", err)
+	}
+
+	absPath, err := filepath.Abs(checkFormatResult.Filename)
 
 	if err != nil {
 		manager.Logger.Println("error on get absolute path", err)

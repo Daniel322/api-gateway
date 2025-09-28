@@ -7,7 +7,7 @@ import (
 
 func main() {
 	configManager := config_manager.NewConfigManager()
-	configManager.Bootstrap("config/config.json")
+	configManager.Bootstrap()
 
 	fmt.Printf("%+v\n", configManager.Values)
 	// natsadapter.Connect(
