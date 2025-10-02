@@ -55,8 +55,6 @@ func (manager *ConfigManager) CheckFileFormat() (*CheckFileFormatResult, error) 
 
 	configFile := files[0].Name()
 
-	manager.Logger.Println("configFile", configFile)
-
 	return &CheckFileFormatResult{
 		Filename: CONFIG_FOLDER + "/" + configFile,
 		Format:   strings.Split(configFile, ".")[1],
@@ -67,6 +65,8 @@ func (manager *ConfigManager) Bootstrap() {
 	manager.Logger.Println("start config bootstrap")
 
 	checkFormatResult, err := manager.CheckFileFormat()
+
+	manager.Logger.Println(checkFormatResult)
 
 	if err != nil {
 		manager.Logger.Println("error on get fileformat", err)
