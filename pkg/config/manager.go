@@ -86,9 +86,22 @@ func (manager *ConfigManager) Bootstrap() {
 		manager.Logger.Println("error on read file", err)
 	}
 
-	err = json.Unmarshal(bytes, &manager.Values)
+	switch checkFormatResult.Format {
+	case "json":
+		{
+			manager.SetJSON(bytes)
+		}
+	}
+}
+
+func (manager *ConfigManager) SetJSON(bytes []byte) {
+	err := json.Unmarshal(bytes, &manager.Values)
 
 	if err != nil {
 		manager.Logger.Println("error on parse bytes", err)
 	}
+}
+
+func (manager *ConfigManager) SetToOS() {
+	// TODO
 }
