@@ -9,17 +9,10 @@ import (
 	"strings"
 )
 
+// TODO: add  public method for get key value
 // TODO: add possibility to merge with default values
 // TODO: add yaml support
 // TODO: add .env support
-
-type ConfigWebServer struct {
-	Port int
-}
-
-type Config struct {
-	Server ConfigWebServer
-}
 
 type ConfigManager struct {
 	Name   string
@@ -83,6 +76,7 @@ func (manager *ConfigManager) Bootstrap() {
 	}
 
 	manager.Logger.Println("absolute path", absPath)
+	manager.Logger.Println("file format", checkFormatResult.Format)
 
 	bytes, err := os.ReadFile(absPath)
 
@@ -92,12 +86,24 @@ func (manager *ConfigManager) Bootstrap() {
 
 	switch checkFormatResult.Format {
 	case "json":
-		{
-			manager.SetJSON(bytes)
-		}
+		manager.SetJSON(bytes)
+	case "env":
+		manager.SetEnv(bytes)
+	case "yaml":
+		manager.SetYaml(bytes)
+	default:
+		manager.Logger.Panicln("unsupported config file type")
 	}
 
 	manager.SetToOS()
+}
+
+func (manager *ConfigManager) SetEnv(bytes []byte) {
+	manager.Logger.Println("not implemented")
+}
+
+func (manager *ConfigManager) SetYaml(bytes []byte) {
+	manager.Logger.Println("not implemented")
 }
 
 func (manager *ConfigManager) SetJSON(bytes []byte) {
