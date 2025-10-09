@@ -5,8 +5,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
+
+// TODO: add possibility to merge with default values
+// TODO: add yaml support
+// TODO: add .env support
 
 type ConfigWebServer struct {
 	Port int
@@ -19,8 +24,7 @@ type Config struct {
 type ConfigManager struct {
 	Name   string
 	Logger *log.Logger
-	// TODO: make possibility to keep vars here, read file and set vars in custom map
-	Values Config
+	Values map[string]interface{}
 }
 
 const CONFIG_FOLDER = "./config"
@@ -29,7 +33,7 @@ func NewConfigManager() *ConfigManager {
 	return &ConfigManager{
 		Name:   "ConfigManager",
 		Logger: log.New(os.Stdout, "ConfigManager ", log.LstdFlags),
-		Values: Config{},
+		Values: make(map[string]interface{}),
 	}
 }
 
@@ -92,16 +96,44 @@ func (manager *ConfigManager) Bootstrap() {
 			manager.SetJSON(bytes)
 		}
 	}
+
+	manager.SetToOS()
 }
 
 func (manager *ConfigManager) SetJSON(bytes []byte) {
 	err := json.Unmarshal(bytes, &manager.Values)
 
 	if err != nil {
-		manager.Logger.Println("error on parse bytes", err)
+		manager.Logger.Println("error on parse bytes in map", err)
 	}
 }
 
 func (manager *ConfigManager) SetToOS() {
-	// TODO
+	manager.Logger.Println("Start to backup write config to OS")
+	for key, value := range manager.Values {
+		switch v := value.(type) {
+		case map[string]interface{}:
+			for k, val := range v {
+				manager.baseSet(key+"."+k, val)
+			}
+		default:
+			manager.baseSet(key, value)
+		}
+	}
+	manager.Logger.Println("Complete to backup write config to OS")
+}
+
+func (manager *ConfigManager) baseSet(key string, value interface{}) {
+	switch v := value.(type) {
+	case string:
+		os.Setenv(key, v)
+	case float64:
+		os.Setenv(key, strconv.FormatFloat(value.(float64), 'g', -1, 64))
+	case bool:
+		if v {
+			os.Setenv(key, "true")
+		} else {
+			os.Setenv(key, "false")
+		}
+	}
 }
