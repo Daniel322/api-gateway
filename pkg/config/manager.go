@@ -20,8 +20,6 @@ type ConfigManager struct {
 	Values map[string]interface{}
 }
 
-const CONFIG_FOLDER = "./config"
-
 func NewConfigManager() *ConfigManager {
 	return &ConfigManager{
 		Name:   "ConfigManager",
@@ -120,16 +118,16 @@ func (manager *ConfigManager) SetToOS() {
 		switch v := value.(type) {
 		case map[string]interface{}:
 			for k, val := range v {
-				manager.baseSet(key+"."+k, val)
+				manager.baseSetToOS(key+"."+k, val)
 			}
 		default:
-			manager.baseSet(key, value)
+			manager.baseSetToOS(key, value)
 		}
 	}
 	manager.Logger.Println("Complete to backup write config to OS")
 }
 
-func (manager *ConfigManager) baseSet(key string, value interface{}) {
+func (manager *ConfigManager) baseSetToOS(key string, value interface{}) {
 	switch v := value.(type) {
 	case string:
 		os.Setenv(key, v)

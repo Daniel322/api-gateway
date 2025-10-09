@@ -10,6 +10,19 @@ func main() {
 	configManager.Bootstrap()
 
 	fmt.Printf("%+v\n", configManager.Values)
+	test1, err := configManager.Get("server.port")
+	if err != nil {
+		fmt.Println("fail test1", err)
+	} else {
+		fmt.Println("complete test1", test1)
+	}
+
+	test3, err := configManager.Get("testInclude.asd")
+	if err != nil {
+		fmt.Println("fail test3", err)
+	} else {
+		fmt.Println("complete test3", test3)
+	}
 	// fmt.Printf("%+v\n", os.Environ())
 
 	// natsadapter.Connect(
