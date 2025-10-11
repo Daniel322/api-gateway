@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"slices"
+	"strings"
 )
 
 func (manager *ConfigManager) isInvalidValue(value interface{}) bool {
@@ -24,6 +25,14 @@ func (manager *ConfigManager) Get(key string) (interface{}, error) {
 	}
 
 	var value interface{}
+
+	// check key
+
+	keyParts := strings.Split(key, ".")
+
+	if len(keyParts) > 1 {
+
+	}
 
 	// go to map file
 	value = manager.Values[key]
