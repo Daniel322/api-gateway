@@ -9,8 +9,6 @@ import (
 	"strings"
 )
 
-// TODO: add  public method for get key value
-// TODO: add possibility to merge with default values
 // TODO: add yaml support
 // TODO: add .env support
 

@@ -16,7 +16,24 @@ func (manager *ConfigManager) isInvalidValue(value interface{}) bool {
 	}
 }
 
-// TODO: fix multi key for maps
+func baseGet(key string, value map[string]interface{}) interface{} {
+	keyParts := strings.Split(key, ".")
+	result := value
+	for _, part := range keyParts {
+		if stepValue, ok := result[part]; ok {
+			switch stepValueType := stepValue.(type) {
+			case map[string]interface{}:
+				result = stepValueType
+			default:
+				return stepValueType
+			}
+		} else {
+			return nil
+		}
+	}
+	return result
+}
+
 // TODO: add tests
 
 func (manager *ConfigManager) Get(key string) (interface{}, error) {
@@ -26,25 +43,18 @@ func (manager *ConfigManager) Get(key string) (interface{}, error) {
 
 	var value interface{}
 
-	// check key
-
-	keyParts := strings.Split(key, ".")
-
-	if len(keyParts) > 1 {
-
-	}
-
-	// go to map file
-	value = manager.Values[key]
+	value = baseGet(key, manager.Values)
 	manager.Logger.Println("get "+key+" from values"+" result:", value)
+
 	if manager.isInvalidValue(value) {
 		// go to os
 		value = os.Getenv(key)
 		manager.Logger.Println("get "+key+" from os"+" result:", value)
 		if manager.isInvalidValue(value) {
 			// try to write default value
-			value = DEFAULT_CONFIG[key]
+			value = baseGet(key, DEFAULT_CONFIG)
 			manager.Logger.Println("get "+key+" from default"+" result:", value)
+
 			if manager.isInvalidValue(value) {
 				return nil, errors.New(key + " not found")
 			}
