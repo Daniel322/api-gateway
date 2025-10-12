@@ -93,11 +93,11 @@ func (manager *ConfigManager) Bootstrap() {
 }
 
 func (manager *ConfigManager) setEnv(bytes []byte) {
-	manager.logger.Println("not implemented")
+	manager.logger.Panicln("env config not implemented")
 }
 
 func (manager *ConfigManager) setYaml(bytes []byte) {
-	manager.logger.Println("not implemented")
+	manager.logger.Panicln("yaml config not implemented")
 }
 
 func (manager *ConfigManager) setJSON(bytes []byte) {
