@@ -43,17 +43,17 @@ func (manager *ConfigManager) Get(key string) (interface{}, error) {
 
 	var value interface{}
 
-	value = baseGet(key, manager.Values)
-	manager.Logger.Println("get "+key+" from values"+" result:", value)
+	value = baseGet(key, manager.values)
+	manager.logger.Println("get "+key+" from values"+" result:", value)
 
 	if manager.isInvalidValue(value) {
 		// go to os
 		value = os.Getenv(key)
-		manager.Logger.Println("get "+key+" from os"+" result:", value)
+		manager.logger.Println("get "+key+" from os"+" result:", value)
 		if manager.isInvalidValue(value) {
 			// try to write default value
 			value = baseGet(key, DEFAULT_CONFIG)
-			manager.Logger.Println("get "+key+" from default"+" result:", value)
+			manager.logger.Println("get "+key+" from default"+" result:", value)
 
 			if manager.isInvalidValue(value) {
 				return nil, errors.New(key + " not found")

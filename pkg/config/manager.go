@@ -13,16 +13,14 @@ import (
 // TODO: add .env support
 
 type ConfigManager struct {
-	Name   string
-	Logger *log.Logger
-	Values map[string]interface{}
+	logger *log.Logger
+	values map[string]interface{}
 }
 
 func NewConfigManager() *ConfigManager {
 	return &ConfigManager{
-		Name:   "ConfigManager",
-		Logger: log.New(os.Stdout, "ConfigManager ", log.LstdFlags),
-		Values: make(map[string]interface{}),
+		logger: log.New(os.Stdout, "ConfigManager ", log.LstdFlags),
+		values: make(map[string]interface{}),
 	}
 }
 
@@ -31,18 +29,18 @@ type CheckFileFormatResult struct {
 	Format   string
 }
 
-func (manager *ConfigManager) CheckFileFormat() (*CheckFileFormatResult, error) {
+func (manager *ConfigManager) checkFileFormat() (*CheckFileFormatResult, error) {
 	absPath, err := filepath.Abs(CONFIG_FOLDER)
 
 	if err != nil {
-		manager.Logger.Println("error on get absolute path", err)
+		manager.logger.Println("error on get absolute path", err)
 		return nil, err
 	}
 
 	files, err := os.ReadDir(absPath)
 
 	if err != nil {
-		manager.Logger.Println("error on read abs dir", err)
+		manager.logger.Println("error on read abs dir", err)
 		return nil, err
 	}
 
@@ -55,64 +53,64 @@ func (manager *ConfigManager) CheckFileFormat() (*CheckFileFormatResult, error) 
 }
 
 func (manager *ConfigManager) Bootstrap() {
-	manager.Logger.Println("start config bootstrap")
+	manager.logger.Println("start config bootstrap")
 
-	checkFormatResult, err := manager.CheckFileFormat()
+	checkFormatResult, err := manager.checkFileFormat()
 
-	manager.Logger.Println(checkFormatResult)
+	manager.logger.Println(checkFormatResult)
 
 	if err != nil {
-		manager.Logger.Println("error on get fileformat", err)
+		manager.logger.Println("error on get fileformat", err)
 	}
 
 	absPath, err := filepath.Abs(checkFormatResult.Filename)
 
 	if err != nil {
-		manager.Logger.Println("error on get absolute path", err)
+		manager.logger.Println("error on get absolute path", err)
 	}
 
-	manager.Logger.Println("absolute path", absPath)
-	manager.Logger.Println("file format", checkFormatResult.Format)
+	manager.logger.Println("absolute path", absPath)
+	manager.logger.Println("file format", checkFormatResult.Format)
 
 	bytes, err := os.ReadFile(absPath)
 
 	if err != nil {
-		manager.Logger.Println("error on read file", err)
+		manager.logger.Println("error on read file", err)
 	}
 
 	switch checkFormatResult.Format {
 	case "json":
-		manager.SetJSON(bytes)
+		manager.setJSON(bytes)
 	case "env":
-		manager.SetEnv(bytes)
+		manager.setEnv(bytes)
 	case "yaml":
-		manager.SetYaml(bytes)
+		manager.setYaml(bytes)
 	default:
-		manager.Logger.Panicln("unsupported config file type")
+		manager.logger.Panicln("unsupported config file type")
 	}
 
-	manager.SetToOS()
+	manager.setToOS()
 }
 
-func (manager *ConfigManager) SetEnv(bytes []byte) {
-	manager.Logger.Println("not implemented")
+func (manager *ConfigManager) setEnv(bytes []byte) {
+	manager.logger.Println("not implemented")
 }
 
-func (manager *ConfigManager) SetYaml(bytes []byte) {
-	manager.Logger.Println("not implemented")
+func (manager *ConfigManager) setYaml(bytes []byte) {
+	manager.logger.Println("not implemented")
 }
 
-func (manager *ConfigManager) SetJSON(bytes []byte) {
-	err := json.Unmarshal(bytes, &manager.Values)
+func (manager *ConfigManager) setJSON(bytes []byte) {
+	err := json.Unmarshal(bytes, &manager.values)
 
 	if err != nil {
-		manager.Logger.Println("error on parse bytes in map", err)
+		manager.logger.Println("error on parse bytes in map", err)
 	}
 }
 
-func (manager *ConfigManager) SetToOS() {
-	manager.Logger.Println("Start to backup write config to OS")
-	for key, value := range manager.Values {
+func (manager *ConfigManager) setToOS() {
+	manager.logger.Println("Start to backup write config to OS")
+	for key, value := range manager.values {
 		switch v := value.(type) {
 		case map[string]interface{}:
 			for k, val := range v {
@@ -122,7 +120,7 @@ func (manager *ConfigManager) SetToOS() {
 			manager.baseSetToOS(key, value)
 		}
 	}
-	manager.Logger.Println("Complete to backup write config to OS")
+	manager.logger.Println("Complete to backup write config to OS")
 }
 
 func (manager *ConfigManager) baseSetToOS(key string, value interface{}) {
