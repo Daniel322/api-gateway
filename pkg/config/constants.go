@@ -3,7 +3,14 @@ package config_manager
 const CONFIG_FOLDER = "./config"
 
 // static array with config keys
-var SUPPORTED_KEYS = []string{"server.port", "wsconnection.useWs", "wsconnection.keepalive", "testInclude.asd"}
+var SUPPORTED_KEYS = []string{
+	"server.port",
+	"wsconnection.useWs",
+	"wsconnection.keepalive",
+	"nats.url",
+	"nats.system_username",
+	"nats.system_password",
+}
 
 var DEFAULT_CONFIG = map[string]interface{}{
 	"server": map[string]interface{}{

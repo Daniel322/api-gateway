@@ -1,7 +1,6 @@
 package config_manager
 
 import (
-	"errors"
 	"os"
 	"slices"
 	"strings"
@@ -36,9 +35,10 @@ func baseGet(key string, value map[string]interface{}) interface{} {
 
 // TODO: add tests
 
-func (manager *ConfigManager) Get(key string) (interface{}, error) {
+func (manager *ConfigManager) Get(key string) interface{} {
 	if ok := slices.Contains(SUPPORTED_KEYS, key); !ok {
-		return nil, errors.New("unsupported key " + key)
+		manager.logger.Println("unsupported key " + key)
+		return nil
 	}
 
 	var value interface{}
@@ -56,10 +56,11 @@ func (manager *ConfigManager) Get(key string) (interface{}, error) {
 			manager.logger.Println("get "+key+" from default"+" result:", value)
 
 			if manager.isInvalidValue(value) {
-				return nil, errors.New(key + " not found")
+				manager.logger.Println(key + " not found")
+				return nil
 			}
 		}
 	}
 
-	return value, nil
+	return value
 }
