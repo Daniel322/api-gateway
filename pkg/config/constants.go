@@ -10,6 +10,7 @@ var SUPPORTED_KEYS = []string{
 	"nats.url",
 	"nats.system_username",
 	"nats.system_password",
+	"broker",
 }
 
 var DEFAULT_CONFIG = map[string]interface{}{

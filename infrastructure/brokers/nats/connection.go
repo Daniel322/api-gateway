@@ -2,14 +2,12 @@ package nats_adapter
 
 import (
 	"log"
+	"websocket-gateway/infrastructure/brokers/connection"
 
 	nats "github.com/nats-io/nats.go"
 )
 
-type NatsConnection struct {
-	Connection *nats.Conn
-	logger     *log.Logger
-}
+type NatsConnection connection.Connection[*nats.Conn]
 
 func NewNatsConnection(url string, options nats.Options) *NatsConnection {
 	logger := log.New(log.Writer(), "NatsConnection ", log.LstdFlags)
@@ -24,8 +22,13 @@ func NewNatsConnection(url string, options nats.Options) *NatsConnection {
 
 	return &NatsConnection{
 		Connection: conn,
-		logger:     logger,
+		Logger:     logger,
 	}
+}
+
+func (nats *NatsConnection) Discover() any {
+	nats.Logger.Println("NATS Discover call")
+	return nil
 }
 
 // func Connect(url string, options nats.Options) error {
@@ -60,5 +63,5 @@ func NewNatsConnection(url string, options nats.Options) *NatsConnection {
 
 func (nats *NatsConnection) Disconnect() {
 	nats.Connection.Close()
-	nats.logger.Println("succesfull disconect from NATS")
+	nats.Logger.Println("succesfull disconect from NATS")
 }
